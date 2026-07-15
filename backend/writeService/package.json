@@ -1,0 +1,20 @@
+{
+  "name": "url-shortener-write-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "cassandra-driver": "^4.8.0",
+    "express": "^5.1.0",
+    "redis": "^5.8.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
