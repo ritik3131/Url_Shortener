@@ -86,6 +86,16 @@ input {
     font: inherit;
 }
 
+.aliasLabel {
+    margin-top: 18px;
+}
+
+.helper {
+    margin: 8px 0 0;
+    font-size: .9rem;
+    color: #667066;
+}
+
 button {
     border: 0;
     border-radius: 10px;
@@ -134,6 +144,11 @@ button:disabled {
     color: #17221d;
     font-weight: 750;
     overflow-wrap: anywhere;
+}
+
+.result strong {
+    color: #5d7c22;
+    font-size: .92rem;
 }
 
 .result button {

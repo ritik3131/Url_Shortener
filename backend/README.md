@@ -14,6 +14,7 @@ Cassandra is the durable source of truth. Redis is a cache, not a source of trut
 POST /shorten
 client -> load balancer -> write service
        -> validate HTTP/HTTPS destination URL
+       -> if provided, validate customAlias and reserve it as the code
        -> generate seven-character Snowflake/Base62 code
        -> Cassandra INSERT ... IF NOT EXISTS
        -> Redis SET link:{code} with a 300-second TTL
@@ -28,6 +29,8 @@ client -> load balancer -> read service
 ```
 
 The load balancer is the only public endpoint. It forwards `POST /shorten` to the write service and `GET /{code}` to the read service without exposing internal service ports.
+
+Custom aliases are supported by sending `customAlias` in the `POST /shorten` body. The alias must be 3 to 32 characters long and may contain only letters, numbers, hyphens, and underscores. The writer uses that alias as the code directly, so the same Cassandra uniqueness check protects both generated codes and custom aliases. If the alias is already taken, the writer returns `409`.
 
 ## Start the system
 
@@ -86,6 +89,19 @@ $response
 
 Expected result: HTTP `201`, a seven-character `code`, and a `shortUrl` beginning with `http://localhost:3000/`.
 
+To create a custom alias, send `customAlias` in the same request:
+
+```powershell
+$aliasResponse = Invoke-RestMethod -Method Post `
+  -Uri 'http://localhost:3000/shorten' `
+  -ContentType 'application/json' `
+  -Body '{"url":"https://example.com/launch","customAlias":"launch-2026"}'
+
+$aliasResponse
+```
+
+Expected result: HTTP `201`, `code` equal to `launch-2026`, and a matching `shortUrl`.
+
 Verify the durable Cassandra mapping:
 
 ```powershell
@@ -114,6 +130,7 @@ Expected result: `HTTP/1.1 301` and a `Location: https://example.com/articles/he
 ## What to check
 
 - `POST /shorten` returns `201`; invalid HTTP/HTTPS URLs return `400`.
+- `customAlias` is optional, but when present it must be unique and follow the alias rules.
 - Generated codes are exactly seven Base62 characters.
 - Cassandra has one `links_by_code` row for every created code.
 - Redis contains `link:{code}` immediately after creation, but its disappearance after the TTL is normal.

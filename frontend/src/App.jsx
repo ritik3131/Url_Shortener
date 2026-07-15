@@ -2,6 +2,7 @@ import { useState } from "react";
 
 export default function App() {
   const [url, setUrl] = useState("");
+  const [customAlias, setCustomAlias] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,11 +18,15 @@ export default function App() {
       const response = await fetch("/shorten", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({
+          url,
+          ...(customAlias.trim() ? { customAlias: customAlias.trim() } : {}),
+        }),
       });
       const data = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
         throw new Error(data.error ?? "Unable to create a short link.");
+      }
       setResult(data);
     } catch (requestError) {
       setError(requestError.message);
@@ -63,9 +68,25 @@ export default function App() {
               required
             />
             <button disabled={loading}>
-              {loading ? "Creating…" : "Shorten"}
+              {loading ? "Creating..." : "Shorten"}
             </button>
           </div>
+
+          <label htmlFor="alias" className="aliasLabel">
+            Custom alias
+          </label>
+          <input
+            id="alias"
+            type="text"
+            value={customAlias}
+            onChange={(event) => setCustomAlias(event.target.value)}
+            placeholder="launch-2026"
+            minLength={3}
+            maxLength={32}
+          />
+          <p className="helper">
+            Optional. Use 3 to 32 letters, numbers, hyphen, or underscore.
+          </p>
         </form>
         {error && (
           <p className="error" role="alert">
@@ -78,6 +99,7 @@ export default function App() {
             <a href={result.shortUrl} target="_blank" rel="noreferrer">
               {result.shortUrl}
             </a>
+            {result.customAlias && <strong>Custom alias enabled</strong>}
             <button type="button" onClick={copy}>
               {copied ? "Copied" : "Copy"}
             </button>
