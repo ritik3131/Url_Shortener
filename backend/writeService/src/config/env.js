@@ -1,17 +1,3 @@
 import 'dotenv/config';
-
-function required(name) {
-  const value = process.env[name];
-  if (!value) throw new Error(`${name} is required`);
-  return value;
-}
-
-export const env = {
-  port: Number(process.env.PORT ?? 3001),
-  databaseUrl: required('DATABASE_URL'),
-  redisUrl: required('REDIS_URL'),
-  workerId: Number(process.env.WORKER_ID ?? 1),
-  customEpochSeconds: Number(process.env.CUSTOM_EPOCH_SECONDS ?? 1735689600),
-  kafkaBrokers: required('KAFKA_BROKERS').split(','),
-  kafkaTopic: process.env.KAFKA_TOPIC ?? 'short-link-created'
-};
+const required = (name) => { if (!process.env[name]) throw new Error(`${name} is required`); return process.env[name]; };
+export const env = { port: Number(process.env.PORT ?? 3001), cassandraContactPoints: required('CASSANDRA_CONTACT_POINTS').split(','), redisUrl: required('REDIS_URL'), workerId: Number(process.env.WORKER_ID ?? 1), customEpochSeconds: Number(process.env.CUSTOM_EPOCH_SECONDS ?? 1735689600) };
